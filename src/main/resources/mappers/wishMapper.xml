@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.mycom.ojo.WishMapper">
+<insert id="create">
+	insert into wish(ucode, rcode)
+	values(#{ucode}, #{rcode})
+</insert>
+
+<select id="read" resultType="kr.mycom.ojo.model.WishVo">
+	select *
+	from wish
+	where rcode = #{rcode} and ucode = #{ucode}
+</select>
+
+<delete id="delete">
+	delete from wish
+	where rcode = #{rcode} and ucode = #{ucode}
+</delete>
+
+</mapper>

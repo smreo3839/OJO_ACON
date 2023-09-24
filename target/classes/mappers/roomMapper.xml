@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.mycom.ojo.RoomMapper">
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'addr'.toString()">
+				and addr like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'name'.toString()">
+				and name like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'rcode'.toString()">
+				and rcode = #{keyword}
+			</if>
+		</if>
+	</sql>
+
+	<select id="listAll" resultType="kr.mycom.ojo.model.Room_infoVo">
+		 <![CDATA[
+		select rcode,name,addr,phone,rtype,rprofile,thumb,thdetail01,thdetail02,thdetail03,thdetail04,thdetail05,thdetail06,thdetail07,thdetail08,thdetail09,thdetail010,prc,information from room_info order by rcode;
+		 ]]>
+	</select>
+
+	<select id="listSearch"
+		resultType="kr.mycom.ojo.model.Room_infoVo"><!-- 게시판 특정 수 만큼 셀렉트 -->
+		<![CDATA[  
+		  select * 
+		  from room_info 
+		  where rcode > 0 
+		  ]]>
+		<include refid="search"></include>
+		  <![CDATA[  
+		   order by rcode desc
+		  limit #{pageStart}, #{perPageNum}
+		]]>
+	</select>
+	<select id="listSearchCount" resultType="int"><!-- 게시판 전체 글수 -->
+		<![CDATA[  
+		  select count(rcode) 
+		  from room_info
+		  where rcode > 0 
+		]]>
+		<include refid="search"></include>
+	</select>
+	<select id="read" resultType="kr.mycom.ojo.model.Room_infoVo"><!-- 해당 글 번호의 정보들을 출력 -->
+		select
+		*
+		from
+		room_info
+		where rcode = #{rcode}
+	</select>
+	<select id="readOpt" resultType="kr.mycom.ojo.model.Room_optVo">
+		select
+		*
+		from
+		room_opt
+		where rcode =
+		#{rcode}
+	</select>
+	<select id="readContent"
+		resultType="kr.mycom.ojo.model.ReviewVo">
+		SELECT
+		rv.rvcode,rv.ucode,rv.rcode,rv.review,rv.score,left(rv.regdate , 16)
+		as regdate ,mb.name,mb.profile
+		from review as rv join members as mb on
+		rv.ucode =
+		mb.ucode where rv.rcode
+		= #{rcode} order by rv.regdate desc
+	</select>
+	<select id="readiImgVo"
+		resultType="kr.mycom.ojo.model.Review_imgVo">
+		select * from review_img where rcode=#{rcode}
+	</select>
+	<select id="avgScore"
+		resultType="kr.mycom.ojo.model.RoomDetailDTO">
+		select round(avg(score),1) as avgScore, count(rvcode) as
+		reviewCount from review where rcode = #{rcode}
+	</select>
+	<select id="review_ucode" resultType="int" parameterType="map">
+		select
+		count(*) from review
+		where rcode = #{rcode} and ucode = #{ucode}
+	</select>
+	<select id="readiImgVoSpecific"
+		resultType="kr.mycom.ojo.model.Review_imgVo" parameterType="map">
+		SELECT *
+		from review_img where
+		ucode = #{ucode} and rcode = #{rcode}
+	</select>
+	<update id="updateViewCnt"><!-- 조회수 증가 -->
+		update room_info set viewcnt = viewcnt +1 where rcode = #{rcode}
+	</update>
+	<insert id="insertReviewVo">
+		insert into review_img (uuid, uploadpath, filename,
+		rcode, ucode)
+		values (#{uuid}, #{uploadPath}, #{fileName},
+		#{rcode},
+		#{ucode} )
+	</insert>
+
+	<insert id="insertReview">
+		insert into review (ucode,rcode,review,score)
+		values
+		(${ucode}, #{rcode}, #{review}, #{score})
+	</insert>
+	<delete id="removeReview" parameterType="map">
+		delete from review where
+		ucode = #{ucode} and rcode = #{rcode};
+	</delete>
+	<delete id="removeReview_img" parameterType="map"> <!-- 리뷰 사진 정보 삭제 -->
+		delete from review_img where
+		ucode = #{ucode} and rcode = #{rcode}
+	</delete>
+
+	<!-- 스터디룸 신청 취소 -->
+	<delete id="reserve_undo">
+		delete from reserve_wait where rcode = #{rcode} and
+		ucode
+		= #{ucode}
+	</delete>
+
+	<!-- 스터디룸 신청 -->
+	<insert id="reserve_join">
+		INSERT INTO reserve_wait (ucode, rcode, cnt,
+		datereserve)
+		VALUES
+		(#{ucode},#{rcode},#{cnt},#{dateReserve});
+	</insert>
+
+	<!-- 스터디룸 신청 여부 확인 -->
+	<select id="reserve_count" resultType="int">
+		select
+		count(*) as cnt
+		from
+		reserve_wait
+		where
+		rcode = #{rcode} and ucode =#{ucode};
+	</select>
+	<!-- reserve 테이블 등록한 인원수 제한 유효성 검사 count(*) = 1시 이미 예약된 테이블 -->
+	<select id="reserveCnt" resultType="int">
+		select count(*)
+		from
+		reserve_wait
+		where rcode=#{rcode};
+	</select>
+	<!-- 날짜 차이가 7일 이하로 남으면~ -->
+	<select id="reserveDiffday" resultType="int">
+		SELECT
+		DATEDIFF(datereserve,curdate())
+		from reserve_wait
+		where ucode=#{ucode}
+		and rcode=#{rcode};
+	</select>
+
+	<!-- 해당 유저와 방번호를 매치시켜 갯수세기 -->
+	<select id="reserveDiff" resultType="int">
+		SELECT count(*)
+		from
+		reserve_wait
+		where
+		ucode=#{ucode} and rcode=#{rcode};
+	</select>
+	<!-- 단순히 해당유저의 예약 방갯수 카운트 -->
+	<select id="reserveDiffUser" resultType="int">
+		SELECT
+		count(*)
+		from
+		reserve_wait
+		where
+		ucode=#{ucode};
+	</select>
+
+	<!-- reserve_fixed테이블에 확정으로 넣기 -->
+	<insert id="reserveFixed">
+		INSERT INTO reserve_fixed (ucode, rcode, regdate,
+		regtime,datereserve)
+		(select ucode,rcode,regdate,regtime,datereserve
+		from reserve_wait
+		where ucode=#{ucode} and rcode=#{rcode});
+	</insert>
+	<!-- 고정되었으면 마이페이지 들갈때마다 넣는거 막기 -->
+	<select id="reserveFixedCnt" resultType="int">
+		SELECT count(*)
+		from
+		reserve_fixed
+		where ucode=#{ucode} and rcode=#{rcode};
+	</select>
+	<!-- fixed테이블에서 지난날짜 카운트 -->
+	<select id="pastDaySelectCnt" resultType="int">
+      <![CDATA[  
+           select count(*)
+         from reserve_fixed
+         where datediff(datereserve,curdate())<0; 
+      ]]>
+	</select>
+	<!-- past테이블에 지난 예약 정보 넣고 -->
+	<insert id="reservePastInsert">
+   <![CDATA[  
+      INSERT INTO reserve_past (ucode, rcode, regdate,
+      regtime,datereserve)
+      (select ucode,rcode,regdate,regtime,datereserve
+      from reserve_fixed
+      where datediff(datereserve,curdate())<0);
+   ]]>
+	</insert>
+	<!-- 지난 예약 wait테이블에서 지움 -->
+	<delete id="reWaitPastDelete"> <!-- 리뷰 사진 정보 삭제 -->
+      <![CDATA[  
+      delete from reserve_wait where datediff(datereserve,curdate())<=0;
+      ]]>
+	</delete>
+	<!-- 지난 예약 fixed테이블에서 지움 -->
+	<delete id="refixedPastDelete"> <!-- 리뷰 사진 정보 삭제 -->
+      <![CDATA[  
+      delete from reserve_fixed where datediff(datereserve,curdate())<=0;
+      ]]>
+	</delete>
+	<!-- 메인에서 7일 이하 데이터 카운트 세기 -->
+	<select id="MainDaySelectSeven" resultType="int">
+      <![CDATA[  
+         select count(*)
+         from reserve_wait
+         where datediff(datereserve,curdate())<7;  
+      ]]>
+	</select>
+	<!-- 메인에서 7일 이하 데이터 fixed테이블에 집어넣기 -->
+	<insert id="MainDaySevenFixedInsert">
+   <![CDATA[  
+      INSERT INTO reserve_fixed (ucode, rcode, regdate,
+      regtime,datereserve)
+      (select ucode,rcode,regdate,regtime,datereserve
+      from reserve_wait
+      where datediff(datereserve,curdate())<7);
+       
+   ]]>
+	</insert>
+	<!-- 중복된 fixed테이블 데이터 삭제 -->
+	<delete id="DeleteDuple"> <!-- 리뷰 사진 정보 삭제 -->
+      <![CDATA[  
+      DELETE
+      FROM reserve_fixed
+      WHERE recode IN 
+      (
+          SELECT recode FROM (SELECT recode FROM reserve_fixed GROUP BY rcode, ucode HAVING count(*) > 1) temp_table
+      ) ;
+      ]]>
+	</delete>
+	<!-- 메인페이지 조회수순 방 정보 -->
+	<select id="MainPage_roomInfo"
+		resultType="kr.mycom.ojo.model.Room_info_main">
+		select ri.rcode,ri.name, ri.addr, ri.phone, ri.prc,
+		ri.viewcnt,ri.rprofile,
+		round(avg(coalesce(rv.score,0)),1) as avgScore
+		from room_info as ri
+		LEFT JOIN review as rv on ri.rcode =
+		rv.rcode
+		group
+		by ri.rcode order
+		by ri.viewcnt desc limit 0,9
+	</select>
+	<!-- 리뷰 추천 여부 확인 -->
+	<select id="recCheck" resultType="int">
+		select count(*) from
+		review_like where rvcode = #{rvcode} and ucode = #{ucode}
+	</select>
+	<!-- 리뷰 추천 -->
+	<insert id="recUpdate" parameterType="map">
+		insert into review_like
+		values(#{rvcode}, #{ucode}, #{rcode})
+	</insert>
+	<!-- 리뷰 추천 취소 -->
+	<delete id="recDelete" parameterType="map">
+		delete from review_like
+		where rvcode = #{rvcode} and
+		ucode = #{ucode}
+	</delete>
+	<!-- 게시글 추천수 -->
+	<select id="recCount" parameterType="int" resultType="int">
+		select
+		count(*) from review_like where rvcode = #{rvcode}
+	</select>
+	<select id="allreview_like" resultType="int">
+		select distinct
+		rvcode
+		from
+		review_like where rcode = #{rcode}
+	</select>
+	
+	<!-- 메인페이지 최다 좋아요 리뷰 6개 출력 -->
+	<select id="mostLikeReview"
+		resultType="kr.mycom.ojo.model.MostLikeReview">
+		SELECT rl.rcode,mb.name,rv.review,mb.profile,rf.rprofile
+		FROM review_like as
+		rl,review as rv, members mb,room_info rf where
+		rl.rvcode = rv.rvcode
+		and rv.ucode = mb.ucode and rv.rcode = rf.rcode
+		group by rl.rvcode
+		order by count(*) desc limit 0,6;
+	</select>
+
+</mapper>

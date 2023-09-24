@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.mycom.ojo.GroupMapper">
+	<select id="getTime" resultType="string">
+		select now()
+	</select>
+
+	<select id="read" resultType="kr.mycom.ojo.model.GroupVo">
+		select
+		gcode,ucode,rcode,cnt,cate,regdate,content,title
+		from
+		group_info
+		where
+		gcode = #{gcode};
+	</select>
+
+	<insert id="insert">
+		insert into group_info
+		(ucode,rcode,cnt,cate,content,title)
+		values(#{ucode},#{rcode}, #{cnt},
+		#{cate}, #{content}, #{title})
+	</insert>
+
+	<select id="listAll" resultType="kr.mycom.ojo.model.GroupVo">
+		 <![CDATA[
+		select 
+			gcode,ucode,rcode,cnt,cate,regdate,content,title
+		from 
+			group_info
+		where gcode > 0 
+		 order by gcode desc, regdate desc
+		 ]]>
+	</select>
+
+	<update id="update">
+		update group_info set cnt =#{cnt}, cate =#{cate},
+		content =#{content}, title =#{title}
+		where gcode = #{gcode}
+	</update>
+
+	<delete id="delete">
+		delete from group_info where gcode = #{gcode}
+	</delete>
+
+	<!-- 그룹 신청 취소 -->
+	<delete id="delete_join">
+		delete from group_signup where gcode = #{gcode} and
+		ucode = #{ucode}
+	</delete>
+
+	<!-- 그룹 신청 -->
+	<insert id="insert_join">
+		INSERT INTO group_signup (ucode, gcode)values (#{ucode},#{gcode});
+	</insert>
+
+	<!-- 그룹 신청 여부 확인 -->
+	<select id="join_count" resultType="int">
+		select
+		count(*) as cnt
+		from
+		group_signup
+		where
+		gcode = #{gcode} and ucode =#{ucode};
+	</select>
+	<!-- group_info 테이블 인원 제한 등록 cnt -->
+	<select id="groupCnt" resultType="int">
+		select
+		cnt
+		from
+		group_info
+		where
+		gcode = #{gcode};
+	</select>
+	<!-- group_signup 테이블 등록한 인원수 제한 유효성 검사 count(*) -->
+	<select id="groupSignCnt" resultType="int">
+		select
+		count(*)
+		from
+		group_signup
+		where
+		gcode = #{gcode};
+	</select>
+
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'title'.toString()">
+				and title like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'content'.toString()">
+				and content like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="searchType == 'cate'.toString()">
+				and cate like CONCAT('%', #{keyword}, '%')
+			</if>
+		</if>
+	</sql>
+
+	<select id="listCriteria" resultType="kr.mycom.ojo.model.JoinVo">
+	<![CDATA[
+		select m.name as m_name,m.uid, g.gcode,g.ucode,g.rcode,g.cnt,g.cate,g.regdate,g.content,g.title
+		from members m,group_info g
+		where m.ucode=g.ucode and g.gcode > 0
+		]]>
+		<include refid="search"></include>
+		<![CDATA[  
+			order by g.gcode desc, g.regdate desc
+			limit #{pageStart},#{perPageNum};
+		]]>
+	</select>
+
+	<select id="countPaging" resultType="int">
+		<![CDATA[
+			select 
+				count(gcode) as gcode
+			from 
+				group_info
+			where
+				gcode>0
+		]]>
+		<include refid="search"></include>
+	</select>
+	<!-- <select id ="joinNameID" resultType="kr.mycom.ojo.model.JoinVo"> <![CDATA[ 
+		select m.name as m_name, m.uid as uid, g.gcode,g.ucode,g.rcode,g.cnt,g.cate,g.regdate,g.content,g.title 
+		from members m, group_info g where m.ucode=g.ucode; ]]> </select> -->
+</mapper>
+
+

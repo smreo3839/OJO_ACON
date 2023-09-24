@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.mycom.ojo.MypageMapper">
+	<!-- 위시 리스트 -->
+	<select id="mywish" resultType="kr.mycom.ojo.model.Room_infoVo">
+		select
+		r.rcode, r.name, r.addr,
+		r.rtype, r.phone, r.prc
+		from room_info r, wish w
+		where r.rcode = w.rcode
+		and ucode= #{ucode};
+	</select>
+
+	<!-- 내 게시글 목록 -->
+	<select id="mylist" resultType="kr.mycom.ojo.model.GroupVo">
+		select
+		g.gcode,g.rcode, g.ucode,
+		g.cnt, g.cate, g.regdate, g.content, g.title
+		from
+		group_info g, members m
+		where
+		g.ucode = m.ucode and g.ucode = #{ucode}
+		order by gcode desc;
+	</select>
+
+	<select id="memberin" resultType="kr.mycom.ojo.model.SignupVo">
+		select
+		m.name,m.uid,m.gender,
+		m.profile, m.email, g.gcode
+		from
+		members m, group_signup g
+		where m.ucode
+		= g.ucode and g.gcode = #{gcode};
+	</select>
+	   <!-- 예약목록 -->
+   <select id="viewReserve"
+      resultType="kr.mycom.ojo.model.ReserveVo">
+      select
+      r.recode, r.ucode, i.name, r.regdate, r.regtime,r.dateReserve,
+      i.rcode , r.cnt
+      from reserve_wait r, members m, room_info i
+      where m.ucode =
+      r.ucode and r.rcode = i.rcode and m.ucode = #{ucode}
+      order by regdate
+      desc;
+   </select>
+   <select id="userInformation" resultType="kr.mycom.ojo.model.MemberVo">
+      select * from members where ucode = #{ucode}
+   </select>
+   <!-- 해당 유저의 예약만료된 목록 -->
+   <select id="viewReserve_past"
+      resultType="kr.mycom.ojo.model.ReserveVo_rcode">
+      SELECT
+      rf.recode,rf.ucode,rf.rcode,rf.regdate,rf.regtime,rf.cnt,rf.dateReserve,ri.name
+      FROM reserve_past rf,room_info ri where rf.rcode = ri.rcode and
+      rf.ucode = #{ucode}
+   </select>
+   
+	<!-- 해당 예약이 있으면 1 없으면 0 qr 코드로 중복 포인트 누적을 방지 -->
+	<select id="selectReserve_past" resultType="int" parameterType="map">
+	select count(*) from reserve_past where ucode = #{ucode} and rcode =
+	#{rcode}
+	</select>
+	<update id="stackPoint">
+		update members set point = point + 500 where ucode = #{ucode}
+	</update>
+	<delete id="deletviewReserve_past" parameterType="map">
+		delete from reserve_past where ucode = #{ucode} and rcode = #{rcode}
+	</delete>
+	<select id="listSignUp" resultType="kr.mycom.ojo.model.Group_join">
+		select
+			g.cate, g.title, m.name,s.regdate, g.gcode, g.rcode
+			from group_info g, group_signup s,members m
+			where g.gcode = s.gcode and g.ucode = m.ucode and s.ucode = #{ucode}
+	</select>
+	
+	<!-- administer인지 -->
+	<select id="administer" resultType="int">
+	select
+			count(administer)
+	from
+		members
+	where ucode = #{ucode} and administer=1;
+	</select>
+</mapper>

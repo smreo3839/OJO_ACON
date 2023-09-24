@@ -1,0 +1,241 @@
+@charset "UTF-8";
+
+/* bootstrap theme(Flatly) scss */
+@import "_bootswatch";
+
+@import "_variables";
+
+/* common */
+.txt-empty {
+	padding: 30px 0;
+	text-align: center;
+}
+
+/* page */
+.page-inner {
+	display: block;
+	min-height: 600px;
+	padding: 0 0 3em;
+}
+
+.page-inner:after {
+	display: block;
+	clear: both;
+	content: '';
+}
+
+.page-box-m {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+@media screen and (min-width:1200px) {
+}
+
+/* header */
+.navbar .login-info {
+	overflow: hidden;
+	max-width: 200px;
+}
+
+/* login */
+#page-login .form-control {
+	height: 60px;
+}
+
+#page-login.is-login-fail .form-control {
+	border-color: red !important;
+}
+
+/* member register */
+#page-member-reg {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+#page-member-reg #pwd-msg.not {
+	color: red;
+}
+
+#page-member-reg #pwd-msg.pass {
+	color: green;
+}
+
+/* romm list */
+.room-list {}
+.room-list .add-wish {
+	position:absolute;
+	right:10px;
+	top:10px;
+	z-index:10;
+	font-size:24px;
+	color:#fff;
+	cursor:pointer;
+}
+
+/* 룸상세 */
+#info-picktogram ul {
+	list-style:none;
+	padding:0;
+	margin:0;
+	display:flex;
+	flex-wrap:wrap;
+	border-bottom:2px solid #555;
+	margin-bottom:30px;
+}
+#info-picktogram ul li {
+	flex:1;
+	vertical-align:middle;
+	text-align:center;
+	justify-content: center;
+	align-items: center;		
+	padding: 0 10px 20px 10px;
+	white-space:nowrap;
+}
+#info-picktogram ul li i {
+	font-size:36px;
+	display:block;
+	margin-bottom:10px;
+}
+
+@media (max-width: 992px) {
+	#info-picktogram ul li {
+		flex:none;
+		width:25%;
+	}
+}
+
+/* 룸상세 - 지도 */
+#wrapMap {
+	display:block;
+	position:relative;
+	width:100%;
+	height:460px;
+	background:#eee;
+}
+
+#wrapMap .map {
+	height:100% !important;
+}
+
+/* search bar */
+.searchbar {
+	margin-bottom: auto;
+	margin-top: auto;
+	height: 60px;
+	background-color: #353b48;
+	border-radius: 30px;
+	padding: 10px;
+}
+
+.search_input {
+	color: white;
+	border: 0;
+	outline: 0;
+	background: none;
+	width: 0;
+	caret-color: transparent;
+	line-height: 40px;
+	transition: width 0.4s linear;
+}
+
+.searchbar:hover>.search_input {
+	padding: 0 10px;
+	width: 450px;
+	caret-color: red;
+	transition: width 0.4s linear;
+}
+
+.searchbar:hover>.search_icon {
+	background: white;
+	color: #e74c3c;
+}
+
+.search_icon {
+	height: 40px;
+	width: 40px;
+	float: right;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 50%;
+	color: white;
+}
+
+/* 리뷰쓰기 */
+.uploadResult {
+	width: 100%;
+	background-color: #eee;
+}
+
+.uploadResult ul {
+	display: flex;
+	flex-flow: row;
+	/*justify-content: center;*/
+	/*align-items: center;*/
+	flex-wrap:wrap;
+	padding-left:0;
+}
+
+.uploadResult ul li {
+	width:25%;
+	list-style: none;
+	padding:10px;;
+	font-size:11px;
+}
+
+.uploadResult ul li .filename {
+	display:block;
+	word-break:break-all;
+}
+
+.uploadResult ul li img {
+	max-width:100%;
+}
+
+.bigPictureWrapper {
+	visibility:hidden;
+	display:flex;
+	position: fixed;
+	z-index: -100;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;	
+	background-color:rgba(0,0,0,0.8);
+	opacity:0;
+	transition:visibility 0.6s, opacity 0.6s;
+}
+
+.bigPictureWrapper.is-show {
+	visibility:visible;
+	z-index:1060;
+	opacity:1;
+}
+
+.bigPicture {
+	position:relative;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+}
+
+.bigPicture img {
+}
+
+.fix-color.btn-success:focus, .fix-color.btn-success:hover{
+	background-color: #59b1eb;
+	border-color: #59b1eb;
+}
+
+/* 리뷰 리스트 */
+#box-review .list-comments .list-item {position:relative; margin-top:20px; padding:20px 0; border-top:1px dashed #ddd;}
+#box-review .list-comments .list-item:first-of-type {margin-top:0; border-top:0;}
+#box-review .list-comments .list-item .btn-close {display:none; position:absolute; right:0; top:15px; z-index:10; width:30px; height:30px; font-size:20px; text-align:center; line-height:30px; cursor:pointer;}
+#box-review .list-comments .my-item .btn-close {display:block !important;}
+#box-review .list-comments .comment-avatar {position:absolute; left:0; top:20px; z-index:10; width:80px;}
+#box-review .list-comments .comment-avatar img {border-radius:50%;}
+#box-review .list-comments .comment-details {display:block; width:100%; padding:0 35px 0 100px; word-break:break-all;}
+

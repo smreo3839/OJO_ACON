@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.mycom.ojo.RoomAttachMapper">
+	<insert id="insert">
+		insert into review_img (uuid, uploadPath, fileName,
+		fileType, rcode)
+		values (#{uuid}, #{uploadPath}, #{fileName},
+		#{fileType}, #{rcode} )
+	</insert>
+
+	<delete id="delete">
+
+		delete from review_img where uuid = #{uuid}
+
+	</delete>
+
+	<select id="findByrcode"
+		resultType="kr.mycom.ojo.model.Review_imgVo">
+		select * from review_img where rcode = #{rcode}
+	</select>
+
+	<delete id="deleteAll">
+
+		delete review_img where rcode = #{rcode}<!-- 해당 가게의 업로드 이미지 전체 삭제 -->
+
+	</delete>
+
+	<select id="getOldFiles"
+		resultType="kr.mycom.ojo.model.Review_imgVo">
+
+		select * from review_img where uploadPath = to_char(sysdate
+		-1 ,'yyyy\mm\dd')
+
+	</select>
+</mapper>
